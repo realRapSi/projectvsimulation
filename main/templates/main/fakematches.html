@@ -23,7 +23,7 @@ PROJECT V SIMULATION
             </div>
             <div class="col-sm">
                 <h4>Create Pointsdeduction</h4>
-                <form method="post" action="/fakematches">
+                <form method="post" action="/pointsdeduction">
                     {% csrf_token %}
                     {{form|crispy}}
                     <button type="submit" class="btn btn-success">Create</button>

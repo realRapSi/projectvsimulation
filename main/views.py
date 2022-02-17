@@ -116,12 +116,11 @@ def points_deduction(response):
     if response.method == 'POST':
         form = FakeMatchForm(response.POST)
         if form.is_valid():
-            print('got here')
             new_fakematch = FakeMatch(points_deduction=form.cleaned_data['points_deduction'],
                                          date=form.cleaned_data['date'],
                                          team=form.cleaned_data['team'])
             new_fakematch.save()
-            return redirect('/fakematches')
+            return redirect('/pointsdeduction')
 
     fakematches = FakeMatch.objects.all()
     form = FakeMatchForm()
