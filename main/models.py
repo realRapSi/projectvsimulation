@@ -28,12 +28,15 @@ class Match(models.Model):
     compute = models.BooleanField(default=False)
 
 class FakeMatch(models.Model):
-    id = models.CharField(max_length=200, primary_key=True)
+    id = models.AutoField(primary_key=True)
     compute = models.BooleanField(default=False)
     computed = models.BooleanField(default=False)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=True, null=True)
     points_deduction = models.IntegerField(blank=True, null=True)
     date = models.DateTimeField(blank=False, default=timezone.now)
+
+    def __str__(self) -> str:
+        return self.team.name
 
 
 

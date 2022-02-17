@@ -57,7 +57,7 @@ def update_database(response):
                             compute = compute)
             new_match.save()
 
-    return redirect('')
+    return redirect('/leaderboard')
 
 def run_calculation(response):
     calculation()
