@@ -3,7 +3,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.shortcuts import redirect, render
 from django.core import files
-from .models import Team, Match
+from .models import Team, Match, FakeMatch
+from .forms import FakeMatchForm
 import requests
 from django.utils import timezone
 import json, os
@@ -56,12 +57,11 @@ def update_database(response):
                             compute = compute)
             new_match.save()
 
-    return redirect('/')
+    return redirect('')
 
 def run_calculation(response):
     calculation()
-    teams = Team.objects.order_by('-ladder_points')
-    return render(response, 'main/index.html', {'teams': teams})
+    return redirect('/leaderboard')
 
 def ranking(response):
     teams = Team.objects.order_by('-ladder_points')
@@ -72,14 +72,29 @@ def reset_ladder_points(response):
     for team in teams:
         team.ladder_points = 1000
         team.save()
-    return render(response, 'main/index.html', {'teams': teams})
+    return redirect('/leaderboard')
 
 def calculation():
     matches = Match.objects.all()
+    fake_matches = FakeMatch.objects.all()
     matches_sorted_by_date = matches.order_by('date')
 
     for match in matches_sorted_by_date:
         if match.compute and match.status == 'COMPLETED':
+            for fakematch in fake_matches:
+                if match.teamA == fakematch.team:
+                    if match.date > fakematch.date and not fakematch.computed:
+                        match.teamA.ladder_points -= fakematch.points_deduction
+                        fakematch.computed = True
+                        fakematch.save()
+                        match.teamA.save()
+                if match.teamB == fakematch.team and not fakematch.computed:
+                    if match.date > fakematch.date:
+                        match.teamB.ladder_points -= fakematch.points_deduction
+                        fakematch.computed = True
+                        fakematch.save()
+                        match.teamB.save()
+
             algorithm(match.teamA, match.teamA_score, match.teamB, match.teamB_score)
 
 def algorithm(tA, tA_score, tB, tB_score):
@@ -96,6 +111,21 @@ def algorithm(tA, tA_score, tB, tB_score):
     tA.save()
     tB.save()
 
+def points_deduction(response):
+
+    if response.method == 'POST':
+        form = FakeMatchForm(response.POST)
+        if form.is_valid():
+            print('got here')
+            new_fakematch = FakeMatch(points_deduction=form.cleaned_data['points_deduction'],
+                                         date=form.cleaned_data['date'],
+                                         team=form.cleaned_data['team'])
+            new_fakematch.save()
+            return redirect('/fakematches')
+
+    fakematches = FakeMatch.objects.all()
+    form = FakeMatchForm()
+    return render(response, 'main/fakematches.html', {'fakematches': fakematches, 'form': form})
 
 def current_points_algo(winning_team_ladder_points, losing_team_ladder_points):
     total = winning_team_ladder_points + losing_team_ladder_points
