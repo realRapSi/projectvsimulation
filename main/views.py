@@ -7,14 +7,15 @@ from .models import Team, Match
 import requests
 from django.utils import timezone
 import json, os
+import requests
 
 # Create your views here.
 def index(response):
     return render(response, 'main/index.html', {})
 
 def update_database(response):
-    #load Teams file
-    teams = json.load(open(os.path.join(settings.BASE_DIR, 'Teams.json'), 'r', encoding='utf8'))
+    #get Teams
+    teams = requests.get('https://api.projectv.gg/api/v1/frontend/teams?page_size=10000').json()
 
     #create Team objects
     for team in teams['data']:
@@ -26,8 +27,8 @@ def update_database(response):
                           projectv_points = 0)
             new_team.save()
     
-    #load Matchfile
-    matches = json.load(open(os.path.join(settings.BASE_DIR, 'Matches.json'), 'r', encoding='utf8'))
+    #get Matches of Ladder
+    matches = requests.get('https://api.projectv.gg/api/v1/frontend/tournaments/fc89fadb-962f-43d5-88c5-4eae082eaf1f/xmatches').json()
 
     #Create Match objects
     for match in matches:
