@@ -1,0 +1,20 @@
+{% extends 'main/base.html' %}
+{%block title%}
+RUSH Analytics
+{%endblock%}
+
+{%block content %}
+<h1 class="mt-2">Hubs</h1>
+<hr class="mt-0 mb-4">
+<div id="content" name="content">
+    <ul class="list-group">
+        {% for team in teams %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{team.name}}
+            <span class="badge badge-primary badge-pill">{{team.ladder_points}}</span>
+          </li>
+        {% endfor%}
+      </ul>
+    
+</div>
+{% endblock %}
