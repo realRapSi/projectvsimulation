@@ -18,7 +18,9 @@ PROJECT V SIMULATION
                         <span class="badge badge-primary badge-pill">{{match.date}}</span>
                         <span class="badge badge-primary badge-pill">{{match.points_deduction_is_reset}}</span>
                         <span class="badge badge-primary badge-pill">{{match.points_deduction_is_multiplier}}</span>
-                        <span class="badge badge-primary badge-pill">{{match.points_deduction_multiplier}}</span>
+                        {% if match.points_deduction_is_multiplier%}
+                            <span class="badge badge-primary badge-pill">{{match.points_deduction_multiplier}}</span>
+                        {% endif %}
                       </li>
                     {% endfor%}
                   </ul>
