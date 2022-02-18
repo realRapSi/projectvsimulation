@@ -69,9 +69,13 @@ def ranking(response):
 
 def reset_ladder_points(response):
     teams = Team.objects.all()
+    fakematches = FakeMatch.objects.all()
     for team in teams:
         team.ladder_points = 1000
         team.save()
+    for match in fakematches:
+        match.computed = False
+        match.save()
     return redirect('/leaderboard')
 
 def calculation():
