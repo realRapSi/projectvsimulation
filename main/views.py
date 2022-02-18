@@ -88,13 +88,19 @@ def calculation():
             for fakematch in fake_matches:
                 if match.teamA == fakematch.team:
                     if match.date > fakematch.date and not fakematch.computed:
-                        match.teamA.ladder_points -= fakematch.points_deduction
+                        if fakematch.points_deduction_is_reset:
+                            match.teamA.ladder_points = 1000
+                        elif fakematch.points_deduction_is_multiplier:
+                            match.teamA.ladder_points *= fakematch.points_deduction_multiplier
                         fakematch.computed = True
                         fakematch.save()
                         match.teamA.save()
-                if match.teamB == fakematch.team and not fakematch.computed:
-                    if match.date > fakematch.date:
-                        match.teamB.ladder_points -= fakematch.points_deduction
+                if match.teamB == fakematch.team:
+                    if match.date > fakematch.date and not fakematch.computed:
+                        if fakematch.points_deduction_is_reset:
+                            match.teamB.ladder_points = 1000
+                        elif fakematch.points_deduction_is_multiplier:
+                            match.teamB.ladder_points *= fakematch.points_deduction_multiplier
                         fakematch.computed = True
                         fakematch.save()
                         match.teamB.save()
