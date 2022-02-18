@@ -120,9 +120,11 @@ def points_deduction(response):
     if response.method == 'POST':
         form = FakeMatchForm(response.POST)
         if form.is_valid():
-            new_fakematch = FakeMatch(points_deduction=form.cleaned_data['points_deduction'],
+            new_fakematch = FakeMatch(points_deduction_is_reset=form.cleaned_data['points_deduction_is_reset'],
                                          date=form.cleaned_data['date'],
-                                         team=form.cleaned_data['team'])
+                                         team=form.cleaned_data['team'],
+                                         points_deduction_is_multiplier= form.cleaned_data['points_deduction_is_multiplier'],
+                                         points_deduction_muliplier= form.cleaned_data['points_deduction_muliplier'])
             new_fakematch.save()
             return redirect('/pointsdeduction')
 

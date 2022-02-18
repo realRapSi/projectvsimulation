@@ -16,7 +16,9 @@ PROJECT V SIMULATION
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{match.team.name}}
                         <span class="badge badge-primary badge-pill">{{match.date}}</span>
-                        <span class="badge badge-primary badge-pill">{{match.points_deduction}}</span>
+                        <span class="badge badge-primary badge-pill">{{match.points_deduction_is_reset}}</span>
+                        <span class="badge badge-primary badge-pill">{{match.points_deduction_is_multiplier}}</span>
+                        <span class="badge badge-primary badge-pill">{{match.points_deduction_multiplier}}</span>
                       </li>
                     {% endfor%}
                   </ul>
