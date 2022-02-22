@@ -88,13 +88,19 @@ def calculation():
             for fakematch in fake_matches:
                 if match.teamA == fakematch.team:
                     if match.date > fakematch.date and not fakematch.computed:
-                        match.teamA.ladder_points -= fakematch.points_deduction
+                        if fakematch.points_deduction_is_reset:
+                            match.teamA.ladder_points = 1000
+                        elif fakematch.points_deduction_is_multiplier:
+                            match.teamA.ladder_points *= fakematch.points_deduction_multiplier
                         fakematch.computed = True
                         fakematch.save()
                         match.teamA.save()
-                if match.teamB == fakematch.team and not fakematch.computed:
-                    if match.date > fakematch.date:
-                        match.teamB.ladder_points -= fakematch.points_deduction
+                if match.teamB == fakematch.team:
+                    if match.date > fakematch.date and not fakematch.computed:
+                        if fakematch.points_deduction_is_reset:
+                            match.teamB.ladder_points = 1000
+                        elif fakematch.points_deduction_is_multiplier:
+                            match.teamB.ladder_points *= fakematch.points_deduction_multiplier
                         fakematch.computed = True
                         fakematch.save()
                         match.teamB.save()
@@ -120,9 +126,11 @@ def points_deduction(response):
     if response.method == 'POST':
         form = FakeMatchForm(response.POST)
         if form.is_valid():
-            new_fakematch = FakeMatch(points_deduction=form.cleaned_data['points_deduction'],
+            new_fakematch = FakeMatch(points_deduction_is_reset=form.cleaned_data['points_deduction_is_reset'],
                                          date=form.cleaned_data['date'],
-                                         team=form.cleaned_data['team'])
+                                         team=form.cleaned_data['team'],
+                                         points_deduction_is_multiplier= form.cleaned_data['points_deduction_is_multiplier'],
+                                         points_deduction_multiplier= form.cleaned_data['points_deduction_multiplier'])
             new_fakematch.save()
             return redirect('/pointsdeduction')
 
@@ -144,6 +152,5 @@ def current_points_algo(winning_team_ladder_points, losing_team_ladder_points):
 def new1_points_algo(winning_team_ladder_points, losing_team_ladder_points):
 
     points_change = int(1/(1+10**((winning_team_ladder_points - losing_team_ladder_points)/400))*50)
-    print(points_change)
 
     return points_change

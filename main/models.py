@@ -32,8 +32,11 @@ class FakeMatch(models.Model):
     compute = models.BooleanField(default=False)
     computed = models.BooleanField(default=False)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=True, null=True)
-    points_deduction = models.IntegerField(blank=True, null=True)
+    points_deduction_is_reset = models.BooleanField(default=False)
+    points_deduction_is_multiplier = models.BooleanField(default=False)
+    points_deduction_multiplier = models.FloatField(blank=True, null=True, default=1.00)
     date = models.DateTimeField(blank=False, default=timezone.now)
+
 
     def __str__(self) -> str:
         return self.team.name
