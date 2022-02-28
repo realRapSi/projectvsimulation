@@ -1,0 +1,50 @@
+{% extends 'main/base.html' %}
+{%block title%}
+PROJECT V SIMULATION
+{%endblock%}
+
+{% block content%}
+<div class="row" >
+    <div class="col-sm">
+        <h4>PROJECT V KPI's</h4>
+        <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Total Hours played
+              <span class="badge badge-primary badge-pill">{{hours_played}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Games cancelled
+              <span class="badge badge-primary badge-pill">{{unplayed_matches}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              New players (joined after 31.01)
+              <span class="badge badge-primary badge-pill">{{new_players}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Drop out players (no match played in 30 days)
+              <span class="badge badge-primary badge-pill">{{dropped_players}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Growth of Playerbase
+              <span class="badge badge-primary badge-pill">{{growth}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Players from Germany
+              <span class="badge badge-primary badge-pill">{{dach_players.de}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Players from Switzerland
+              <span class="badge badge-primary badge-pill">{{dach_players.ch}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Players from Austria
+              <span class="badge badge-primary badge-pill">{{dach_players.at}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                Players from Liechtenstein
+              <span class="badge badge-primary badge-pill">{{dach_players.li}}</span>
+            </li>
+          </ul>
+    </div>
+</div>
+{%endblock%}

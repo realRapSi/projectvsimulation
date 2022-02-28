@@ -9,6 +9,7 @@ import requests
 from django.utils import timezone
 import json, os
 import requests
+import datetime as dt
 
 # Create your views here.
 def index(response):
@@ -56,7 +57,7 @@ def update_database(response):
                             match_type = match['round']['group']['name']['en'],
                             compute = compute)
             new_match.save()
-
+    
     return redirect('/leaderboard')
 
 def run_calculation(response):
@@ -154,3 +155,52 @@ def new1_points_algo(winning_team_ladder_points, losing_team_ladder_points):
     points_change = int(1/(1+10**((winning_team_ladder_points - losing_team_ladder_points)/400))*50)
 
     return points_change
+
+def latest_game_finder(response):
+    teams = Team.objects.all()
+    for team in teams:
+        team.last_game = timezone.now() - timedelta(days=90)
+        team.save()
+        games = requests.get('https://api.projectv.gg/api/v1/frontend/participant/{}/xall_matches_to_team'.format(team.id)).json()['data']
+        for game in games:
+            try:
+                now = timezone.now()
+                date = dt.datetime.fromisoformat(game['match']['date']) # 2022-03-07T21:00:00+01:00
+            except:
+                now = timezone.now()
+                date = timezone.now()
+                
+            if date < now and date > team.last_game and game['match']['status'] == 'COMPLETED':
+                team.last_game = date
+                team.save()
+    
+    return redirect('/admin')
+
+def active_users_counter():
+    teams = Team.objects.all()
+    now = timezone.now()
+    active_users = 0
+    for team in teams:
+        if team.last_game > (now - timedelta(days=100)):
+            active_users += team.size
+    
+    return active_users
+
+
+def dashboard(response):
+    total_matches = requests.get('https://api.projectv.gg/api/v1/frontend/matches').json()['meta']['total']
+    avg_matchlength = 40 #in minutes
+    unplayed_matches = len(Match.objects.filter(status='COMPLETED', teamA_score=0, teamB_score=0))
+    playercount_last_month = 5091 #31st of January
+    total_players = requests.get('https://api.projectv.gg/api/v1/frontend/users').json()['meta']['total']
+    joined_this_month = total_players - playercount_last_month
+    active_users = active_users_counter()
+    print(active_users)
+    dropped_players = total_players - active_users
+    dach_players = {
+        'de': 7818,
+        'ch': 350,
+        'at': 587,
+        'li': 1
+        }
+    return render(response, 'main/dashboard.html', {'hours_played': total_matches * avg_matchlength, 'unplayed_matches': unplayed_matches, 'new_players': joined_this_month, 'dropped_players': dropped_players, 'growth': joined_this_month - dropped_players, 'dach_players': dach_players})

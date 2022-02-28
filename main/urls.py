@@ -7,5 +7,7 @@ urlpatterns = [
     path('run_calculation', views.run_calculation, name='run_calculation'),
     path('reset_ladder_points', views.reset_ladder_points, name= 'reset_ladder_points'),
     path('leaderboard', views.ranking, name='leaderboard'),
-    path('pointsdeduction', views.points_deduction, name='fakematches')
+    path('pointsdeduction', views.points_deduction, name='fakematches'),
+    path('latestgamefinder', views.latest_game_finder, name='latest_game_finder'),
+    path('dashboard', views.dashboard, name='dashboard'),
 ]
