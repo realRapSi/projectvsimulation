@@ -30,7 +30,7 @@ def update_database(response):
             new_team.save()
     
     #get Matches of Ladder
-    matches = requests.get('https://api.projectv.gg/api/v1/frontend/tournaments/fc89fadb-962f-43d5-88c5-4eae082eaf1f/xmatches').json()
+    matches = requests.get('https://api.projectv.gg/api/v1/frontend/tournaments/fc89fadb-962f-43d5-88c5-4eae082eaf1f/xmatches').json()['data']
 
     #Create Match objects
     for match in matches:
@@ -47,6 +47,7 @@ def update_database(response):
                 teamB = Team.objects.none().first()
                 compute = False
             new_match = Match(id = match['id'],
+                            type = 'LADDER',
                             number = match['number'],
                             status = match['status'],
                             date = match['date'],
@@ -54,7 +55,7 @@ def update_database(response):
                             teamB = teamB,
                             teamA_score = match['encounters'][0]['final_score'],
                             teamB_score = match['encounters'][1]['final_score'],
-                            match_type = match['round']['group']['name']['en'],
+                            match_type = match['round']['group']['stage']['name']['de'],
                             compute = compute)
             new_match.save()
     
@@ -80,9 +81,8 @@ def reset_ladder_points(response):
     return redirect('/leaderboard')
 
 def calculation():
-    matches = Match.objects.all()
+    matches_sorted_by_date = Match.objects.all().order_by('date')
     fake_matches = FakeMatch.objects.all()
-    matches_sorted_by_date = matches.order_by('date')
 
     for match in matches_sorted_by_date:
         if match.compute and match.status == 'COMPLETED':
@@ -105,7 +105,6 @@ def calculation():
                         fakematch.computed = True
                         fakematch.save()
                         match.teamB.save()
-
             algorithm(match.teamA, match.teamA_score, match.teamB, match.teamB_score)
 
 def algorithm(tA, tA_score, tB, tB_score):
@@ -195,7 +194,6 @@ def dashboard(response):
     total_players = requests.get('https://api.projectv.gg/api/v1/frontend/users').json()['meta']['total']
     joined_this_month = total_players - playercount_last_month
     active_users = active_users_counter()
-    print(active_users)
     dropped_players = total_players - active_users
     dach_players = {
         'de': 7818,
@@ -204,3 +202,14 @@ def dashboard(response):
         'li': 1
         }
     return render(response, 'main/dashboard.html', {'hours_played': total_matches * avg_matchlength, 'unplayed_matches': unplayed_matches, 'new_players': joined_this_month, 'dropped_players': dropped_players, 'growth': joined_this_month - dropped_players, 'dach_players': dach_players})
+
+def delete_all(response):
+    matches = Match.objects.all()
+    for match in matches:
+        match.delete()
+        
+    teams = Team.objects.all()
+    for team in teams:
+        team.delete()
+        
+    return redirect('/leaderboard')

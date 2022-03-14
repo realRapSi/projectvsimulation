@@ -10,4 +10,5 @@ urlpatterns = [
     path('pointsdeduction', views.points_deduction, name='fakematches'),
     path('latestgamefinder', views.latest_game_finder, name='latest_game_finder'),
     path('dashboard', views.dashboard, name='dashboard'),
+    path('delete_all', views.delete_all, name= 'delete_all')
 ]
