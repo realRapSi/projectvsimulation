@@ -1,10 +1,11 @@
 from asyncio.windows_events import NULL
 from datetime import timedelta
+from platform import system
 from django.conf import settings
 from django.shortcuts import redirect, render
 from django.core import files
-from .models import Team, Match, FakeMatch
-from .forms import FakeMatchForm
+from .models import PointSystem, Team, Match, FakeMatch
+from .forms import FakeMatchForm, PointSystemForm
 import requests
 from django.utils import timezone
 import json, os
@@ -213,3 +214,60 @@ def delete_all(response):
         team.delete()
         
     return redirect('/leaderboard')
+
+def points(response):
+    pointSystem = PointSystem.objects.get(id=1)
+    if response.method == 'POST':
+        form = PointSystemForm(response.POST)
+        if form.is_valid():
+            pointSystem.L_pos1 = form.cleaned_data['L_pos1']
+            pointSystem.L_pos2 = form.cleaned_data['L_pos2']
+            pointSystem.L_pos3_4 = form.cleaned_data['L_pos3_4']
+            pointSystem.L_pos5_8 = form.cleaned_data['L_pos5_8']
+            pointSystem.L_pos9_16 = form.cleaned_data['L_pos9_16']
+            pointSystem.L_pos17_32 = form.cleaned_data['L_pos17_32']
+            pointSystem.L_pos33_64 = form.cleaned_data['L_pos33_64']
+            pointSystem.L_pos65_128 = form.cleaned_data['L_pos65_128']
+            pointSystem.L_pos129_256 = form.cleaned_data['L_pos129_256']
+            pointSystem.M_pos1 = form.cleaned_data['M_pos1']
+            pointSystem.M_pos2 = form.cleaned_data['M_pos2']
+            pointSystem.M_pos3_4 = form.cleaned_data['M_pos3_4']
+            pointSystem.M_pos5_8 = form.cleaned_data['M_pos5_8']
+            pointSystem.M_pos9_16 = form.cleaned_data['M_pos9_16']
+            pointSystem.M_pos17_32 = form.cleaned_data['M_pos17_32']
+            pointSystem.M_pos33_64 = form.cleaned_data['M_pos33_64']
+            pointSystem.M_pos65_128 = form.cleaned_data['M_pos65_128']
+            pointSystem.M_pos129_256 = form.cleaned_data['M_pos129_256']
+            pointSystem.C_pos1 = form.cleaned_data['C_pos1']
+            pointSystem.C_pos2 = form.cleaned_data['C_pos2']
+            pointSystem.C_pos3_4 = form.cleaned_data['C_pos3_4']
+            pointSystem.C_pos5_8 = form.cleaned_data['C_pos5_8']
+            pointSystem.C_pos9_16 = form.cleaned_data['C_pos9_16']
+            pointSystem.C_pos17_32 = form.cleaned_data['C_pos17_32']
+            pointSystem.C_pos33_64 = form.cleaned_data['C_pos33_64']
+            pointSystem.C_pos65_128 = form.cleaned_data['C_pos65_128']
+            pointSystem.C_pos129_256 = form.cleaned_data['C_pos129_256']
+            pointSystem.F_pos1 = form.cleaned_data['F_pos1']
+            pointSystem.F_pos2 = form.cleaned_data['F_pos2']
+            pointSystem.F_pos3_4 = form.cleaned_data['F_pos3_4']
+            pointSystem.F_pos5_8 = form.cleaned_data['F_pos5_8']
+            pointSystem.F_pos9_16 = form.cleaned_data['F_pos9_16']
+            pointSystem.F_pos17_32 = form.cleaned_data['F_pos17_32']
+            pointSystem.F_pos33_64 = form.cleaned_data['F_pos33_64']
+            pointSystem.F_pos65_128 = form.cleaned_data['F_pos65_128']
+            pointSystem.F_pos129_256 = form.cleaned_data['F_pos129_256']
+            pointSystem.Ladder_pos1 = form.cleaned_data['Ladder_pos1']
+            pointSystem.Ladder_pos2 = form.cleaned_data['Ladder_pos2']
+            pointSystem.Ladder_pos3 = form.cleaned_data['Ladder_pos3']
+            pointSystem.Ladder_pos4 = form.cleaned_data['Ladder_pos4']
+            pointSystem.Ladder_pos5_8 = form.cleaned_data['Ladder_pos5_8']
+            pointSystem.Ladder_pos9_16 = form.cleaned_data['Ladder_pos9_16']
+            pointSystem.Ladder_pos17_32 = form.cleaned_data['Ladder_pos17_32']
+            pointSystem.Ladder_pos33_64 = form.cleaned_data['Ladder_pos33_64']
+            pointSystem.Ladder_pos65_128 = form.cleaned_data['Ladder_pos65_128']
+            pointSystem.Ladder_pos129_256 = form.cleaned_data['Ladder_pos129_256']
+            
+            pointSystem.save()
+            return redirect('/pointsallocation')
+    
+    return render(response, 'main/points.html', {'pointSystem': pointSystem})

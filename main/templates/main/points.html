@@ -1,0 +1,102 @@
+{% extends 'main/base.html' %}
+{% load crispy_forms_tags %}
+{%block title%}
+PROJECT V SIMULATION
+{%endblock%}
+
+{%block content %}
+<h1 class="mt-2">Points Allocation</h1>
+<hr class="mt-0 mb-4">
+<div id="content" name="content">
+    <div class="container-fluid" style="width: 100%;">
+        <div class="row" >
+            <div class="col-sm" >
+                <form method="post" action="/pointsallocation">
+                    {% csrf_token %}
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th scope="col">Type</th>
+                            <th scope="col">Winner</th>
+                            <th scope="col">Finalist</th>
+                            <th scope="col">3</th>
+                            <th scope="col">4</th>
+                            <th scope="col">5-8</th>
+                            <th scope="col">9-16</th>
+                            <th scope="col">17-32</th>
+                            <th scope="col">33-64</th>
+                            <th scope="col">65-128</th>
+                            <th scope="col">129-256</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <th scope="row">LAN</th>
+                            <td><input type="number" name="L_pos1" value="{{pointSystem.L_pos1}}" step="any" class="numberinput form-control" id="id_L_pos1"></td>
+                            <td><input type="number" name="L_pos2" value="{{pointSystem.L_pos2}}" step="any" class="numberinput form-control"id="id_L_pos2"></td>
+                            <td colspan="2"><input type="number" name="L_pos3_4" value="{{pointSystem.L_pos3_4}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="L_pos5_8" value="{{pointSystem.L_pos5_8}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="L_pos9_16" value="{{pointSystem.L_pos9_16}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="L_pos17_32" value="{{pointSystem.L_pos17_32}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="L_pos33_64" value="{{pointSystem.L_pos33_64}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="L_pos65_128" value="{{pointSystem.L_pos65_128}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="L_pos129_256" value="{{pointSystem.L_pos129_256}}" step="any" class="numberinput form-control"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Master</th>
+                            <td><input type="number" name="M_pos1" value="{{pointSystem.M_pos1}}" step="any" class="numberinput form-control" id="id_M_pos1"></td>
+                            <td><input type="number" name="M_pos2" value="{{pointSystem.M_pos2}}" step="any" class="numberinput form-control"id="id_M_pos2"></td>
+                            <td colspan="2"><input type="number" name="M_pos3_4" value="{{pointSystem.M_pos3_4}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="M_pos5_8" value="{{pointSystem.M_pos5_8}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="M_pos9_16" value="{{pointSystem.M_pos9_16}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="M_pos17_32" value="{{pointSystem.M_pos17_32}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="M_pos33_64" value="{{pointSystem.M_pos33_64}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="M_pos65_128" value="{{pointSystem.M_pos65_128}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="M_pos129_256" value="{{pointSystem.M_pos129_256}}" step="any" class="numberinput form-control"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Contender</th>
+                            <td><input type="number" name="C_pos1" value="{{pointSystem.C_pos1}}" step="any" class="numberinput form-control" id="id_C_pos1"></td>
+                            <td><input type="number" name="C_pos2" value="{{pointSystem.C_pos2}}" step="any" class="numberinput form-control"id="id_C_pos2"></td>
+                            <td colspan="2"><input type="number" name="C_pos3_4" value="{{pointSystem.C_pos3_4}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="C_pos5_8" value="{{pointSystem.C_pos5_8}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="C_pos9_16" value="{{pointSystem.C_pos9_16}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="C_pos17_32" value="{{pointSystem.C_pos17_32}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="C_pos33_64" value="{{pointSystem.C_pos33_64}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="C_pos65_128" value="{{pointSystem.C_pos65_128}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="C_pos129_256" value="{{pointSystem.C_pos129_256}}" step="any" class="numberinput form-control"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Futures</th>
+                            <td><input type="number" name="F_pos1" value="{{pointSystem.F_pos1}}" step="any" class="numberinput form-control" id="id_F_pos1"></td>
+                            <td><input type="number" name="F_pos2" value="{{pointSystem.F_pos2}}" step="any" class="numberinput form-control"id="id_F_pos2"></td>
+                            <td colspan="2"><input type="number" name="F_pos3_4" value="{{pointSystem.F_pos3_4}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="F_pos5_8" value="{{pointSystem.F_pos5_8}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="F_pos9_16" value="{{pointSystem.F_pos9_16}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="F_pos17_32" value="{{pointSystem.F_pos17_32}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="F_pos33_64" value="{{pointSystem.F_pos33_64}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="F_pos65_128" value="{{pointSystem.F_pos65_128}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="F_pos129_256" value="{{pointSystem.F_pos129_256}}" step="any" class="numberinput form-control"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Ladder</th>
+                            <td><input type="number" name="Ladder_pos1" value="{{pointSystem.Ladder_pos1}}" step="any" class="numberinput form-control" id="id_Ladder_pos1"></td>
+                            <td><input type="number" name="Ladder_pos2" value="{{pointSystem.Ladder_pos2}}" step="any" class="numberinput form-control"id="id_Ladder_pos2"></td>
+                            <td><input type="number" name="Ladder_pos3" value="{{pointSystem.Ladder_pos3}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="Ladder_pos4" value="{{pointSystem.Ladder_pos4}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="Ladder_pos5_8" value="{{pointSystem.Ladder_pos5_8}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="Ladder_pos9_16" value="{{pointSystem.Ladder_pos9_16}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="Ladder_pos17_32" value="{{pointSystem.Ladder_pos17_32}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="Ladder_pos33_64" value="{{pointSystem.Ladder_pos33_64}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="Ladder_pos65_128" value="{{pointSystem.Ladder_pos65_128}}" step="any" class="numberinput form-control"></td>
+                            <td><input type="number" name="Ladder_pos129_256" value="{{pointSystem.Ladder_pos129_256}}" step="any" class="numberinput form-control"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-success">Save</button>
+                  </form>
+            </div>
+        </div>
+    </div>  
+</div>
+{% endblock %}
