@@ -15,7 +15,7 @@ class Team(models.Model):
         return self.name
 
 
-class Match(models.Model):
+class LadderMatch(models.Model):
     id = models.CharField(max_length=200, primary_key=True)
     type = models.CharField(max_length=200, default='')
     number = models.IntegerField(blank=True, null=True)
@@ -23,8 +23,8 @@ class Match(models.Model):
     date = models.DateTimeField(blank=True)
     teamA = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='%(class)s_team_A', blank=True, null=True)
     teamB = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='%(class)s_team_B', blank=True, null=True)
-    teamA_score = models.IntegerField(default=0)
-    teamB_score = models.IntegerField(default=0)
+    teamA_score = models.IntegerField(default=0, null=True)
+    teamB_score = models.IntegerField(default=0, null=True)
     match_type = models.CharField(max_length=200, blank=True)
     compute = models.BooleanField(default=False)
     
@@ -46,6 +46,8 @@ class FakeMatch(models.Model):
         return self.team.name
 
 class PointSystem(models.Model):
+    algo = models.BooleanField(default=False)
+    
     L_pos1 = models.IntegerField(default=0)
     L_pos2 = models.IntegerField(default=0)
     L_pos3_4 = models.IntegerField(default=0)
@@ -112,3 +114,18 @@ class PointSystem(models.Model):
     Ladder_win = models.IntegerField(default=0)
     Ladder_loss = models.IntegerField(default=0)
 
+class Tournament(models.Model):
+    id = models.CharField(max_length=200, primary_key=True)
+    name = models.CharField(max_length=200, blank=True)
+    type = models.CharField(max_length=200, blank=True, null=True)
+    
+    def __str__(self) -> str:
+        return str(self.name)
+    
+class Result(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=True, null=True)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, blank=True, null=True)
+    place = models.CharField(max_length=200, blank=True, null=True)
+    
+    def __str__(self) -> str:
+        return str(self.tournament) + ' - ' + str(self.team) + ' - ' + str(self.place)

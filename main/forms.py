@@ -20,4 +20,5 @@ class PointSystemForm(ModelForm):
                   'C_pos1', 'C_pos2', 'C_pos3_4', 'C_pos5_8', 'C_pos9_16', 'C_pos17_32', 'C_pos33_64', 'C_pos65_128', 'C_pos129_256',
                   'F_pos1', 'F_pos2', 'F_pos3_4', 'F_pos5_8', 'F_pos9_16', 'F_pos17_32', 'F_pos33_64', 'F_pos65_128', 'F_pos129_256',
                   'Ladder_pos1', 'Ladder_pos2', 'Ladder_pos3', 'Ladder_pos4', 'Ladder_pos5_8', 'Ladder_pos9_16', 'Ladder_pos17_32', 'Ladder_pos33_64', 'Ladder_pos65_128', 'Ladder_pos129_256',
+                  'algo',
                   ]

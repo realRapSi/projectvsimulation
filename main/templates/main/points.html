@@ -93,6 +93,17 @@ PROJECT V SIMULATION
                         </tr>
                         </tbody>
                     </table>
+                    <div id="div_id_algo" class="form-check">
+                        {% if pointSystem.algo %}
+                        <input type="checkbox" name="algo" class="checkboxinput form-check-input" id="id_algo" checked>
+                        {% else %}
+                        <input type="checkbox" name="algo" class="checkboxinput form-check-input" id="id_algo">
+                        {% endif %}
+                        <label for="id_points_deduction_is_multiplier" class="form-check-label">
+                            Use new Algorithm for Calculation
+                        </label> 
+                    </div>
+                    <p></p>
                     <button type="submit" class="btn btn-success">Save</button>
                   </form>
             </div>

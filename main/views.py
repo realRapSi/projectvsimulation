@@ -1,10 +1,7 @@
 from asyncio.windows_events import NULL
 from datetime import timedelta
-from platform import system
-from django.conf import settings
 from django.shortcuts import redirect, render
-from django.core import files
-from .models import PointSystem, Team, Match, FakeMatch
+from .models import PointSystem, Team, LadderMatch, FakeMatch, Tournament, Result
 from .forms import FakeMatchForm, PointSystemForm
 import requests
 from django.utils import timezone
@@ -18,7 +15,7 @@ def index(response):
 
 def update_database(response):
     #get Teams
-    teams = requests.get('https://api.projectv.gg/api/v1/frontend/teams?page_size=10000').json()
+    teams = requests.get('https://api.projectv.gg/api/v1/frontend/teams?page_size=100000').json()
 
     #create Team objects
     for team in teams['data']:
@@ -35,7 +32,7 @@ def update_database(response):
 
     #Create Match objects
     for match in matches:
-        if not Match.objects.filter(id= match['id']).exists():
+        if not LadderMatch.objects.filter(id= match['id']).exists():
             compute = True
             try:
                 teamA = Team.objects.get(id= match['encounters'][0]['participant']['participant']['id'])
@@ -47,7 +44,7 @@ def update_database(response):
             except Team.DoesNotExist:
                 teamB = Team.objects.none().first()
                 compute = False
-            new_match = Match(id = match['id'],
+            new_match = LadderMatch(id = match['id'],
                             type = 'LADDER',
                             number = match['number'],
                             status = match['status'],
@@ -60,10 +57,23 @@ def update_database(response):
                             compute = compute)
             new_match.save()
     
+    
     return redirect('/leaderboard')
 
 def run_calculation(response):
-    calculation()
+    tours = requests.get('https://api.projectv.gg/api/v1/frontend/tournaments').json()['data']
+    
+    for tour in tours:
+        if not Tournament.objects.filter(id=tour['id']):
+            tour_obj = Tournament(id=tour['id'], name=tour['name'], type='')
+            tour_obj.save()
+        tournament_obj = Tournament.objects.get(id=tour['id'])
+        if not tournament_obj.id == 'fc89fadb-962f-43d5-88c5-4eae082eaf1f':
+            tournament_results(tournament_obj)
+        
+    print(Team.objects.get(id='ccdcdc5b-7860-4ee4-8ace-2d01dc977790').result_set.all())
+    
+    #calculation()
     return redirect('/leaderboard')
 
 def ranking(response):
@@ -82,7 +92,7 @@ def reset_ladder_points(response):
     return redirect('/leaderboard')
 
 def calculation():
-    matches_sorted_by_date = Match.objects.all().order_by('date')
+    matches_sorted_by_date = LadderMatch.objects.all().order_by('date')
     fake_matches = FakeMatch.objects.all()
 
     for match in matches_sorted_by_date:
@@ -185,12 +195,35 @@ def active_users_counter():
             active_users += team.size
     
     return active_users
-
+    
+def tournament_results(tournament):
+    matches = requests.get('https://api.projectv.gg/api/v1/frontend/tournaments/{}/xmatches'.format(tournament.id)).json()['data']
+    for match in matches:
+        if not match['encounters'][0]['is_bye']:
+            try:
+                team_A = Team.objects.get(id=match['encounters'][0]['participant']['participant_id'])
+                team_A_place = match['encounters'][0]['participant']['place']
+                if not Result.objects.filter(tournament=tournament, team=team_A).exists():
+                    result_obj = Result(tournament=tournament, team=team_A, place=team_A_place)
+                    result_obj.save()
+            except Team.DoesNotExist:
+                print('Team A not found')
+                
+        if not match['encounters'][1]['is_bye']:
+            try:
+                team_B = Team.objects.get(id=match['encounters'][1]['participant']['participant_id'])
+                team_B_place = match['encounters'][1]['participant']['place']
+                if not Result.objects.filter(tournament=tournament, team=team_B).exists():
+                    result_obj = Result(tournament=tournament, team=team_B, place=team_B_place)
+                    result_obj.save()
+            except Team.DoesNotExist:
+                print('Team B not found')
+    
 
 def dashboard(response):
     total_matches = requests.get('https://api.projectv.gg/api/v1/frontend/matches').json()['meta']['total']
     avg_matchlength = 40 #in minutes
-    unplayed_matches = len(Match.objects.filter(status='COMPLETED', teamA_score=0, teamB_score=0))
+    unplayed_matches = len(LadderMatch.objects.filter(status='COMPLETED', teamA_score=0, teamB_score=0))
     playercount_last_month = 5091 #31st of January
     total_players = requests.get('https://api.projectv.gg/api/v1/frontend/users').json()['meta']['total']
     joined_this_month = total_players - playercount_last_month
@@ -205,13 +238,17 @@ def dashboard(response):
     return render(response, 'main/dashboard.html', {'hours_played': total_matches * avg_matchlength, 'unplayed_matches': unplayed_matches, 'new_players': joined_this_month, 'dropped_players': dropped_players, 'growth': joined_this_month - dropped_players, 'dach_players': dach_players})
 
 def delete_all(response):
-    matches = Match.objects.all()
+    matches = LadderMatch.objects.all()
     for match in matches:
         match.delete()
         
     teams = Team.objects.all()
     for team in teams:
         team.delete()
+        
+    results = Result.objects.all()
+    for result in results:
+        result.delete()
         
     return redirect('/leaderboard')
 
@@ -220,6 +257,7 @@ def points(response):
     if response.method == 'POST':
         form = PointSystemForm(response.POST)
         if form.is_valid():
+            pointSystem.algo = form.cleaned_data['algo']
             pointSystem.L_pos1 = form.cleaned_data['L_pos1']
             pointSystem.L_pos2 = form.cleaned_data['L_pos2']
             pointSystem.L_pos3_4 = form.cleaned_data['L_pos3_4']
