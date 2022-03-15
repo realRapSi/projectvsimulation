@@ -1,5 +1,6 @@
 from django.forms import ModelForm
-from .models import FakeMatch, PointSystem
+from .models import FakeMatch, PointSystem, Tournament
+from django import forms
 
 class FakeMatchForm(ModelForm):
     class Meta:
@@ -11,6 +12,26 @@ class FakeMatchForm(ModelForm):
             'points_deduction_is_multiplier': 'Points partially reset with multiplier?',
             'points_deduction_multiplier': 'Deduction Multiplier (% that remain after deduction): '
         }
+        
+class TournamentForm(ModelForm):
+    class Meta:
+        model = Tournament
+        fields = ['name', 'type']
+        labels = {
+            'name': 'Tournament Name',
+            'type': 'Type of Tournament',
+        }
+        TYPE_CHOICES = (
+            ('', 'Select a Tournament Type'),
+            ('LAN', 'LAN'),
+            ('MASTER', 'MASTER'),
+            ('CONTENDER', 'CONTENDER'),
+            ('FUTURES', 'FUTURES'),
+            ('LADDER', 'LADDER'),
+            )
+        widgets = {
+            'type': forms.Select(choices=TYPE_CHOICES,attrs={'class': 'form-control'}),
+            }
 
 class PointSystemForm(ModelForm):
     class Meta:

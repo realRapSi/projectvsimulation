@@ -2,7 +2,7 @@ from asyncio.windows_events import NULL
 from datetime import timedelta
 from django.shortcuts import redirect, render
 from .models import PointSystem, Team, LadderMatch, FakeMatch, Tournament, Result
-from .forms import FakeMatchForm, PointSystemForm
+from .forms import FakeMatchForm, PointSystemForm, TournamentForm
 import requests
 from django.utils import timezone
 import json, os
@@ -59,7 +59,7 @@ def update_database(response):
     
     for tour in tours:
         if not Tournament.objects.filter(id=tour['id']):
-            tour_obj = Tournament(id=tour['id'], name=tour['name'], type='')
+            tour_obj = Tournament(id=tour['id'], name=tour['name']['de'], type='')
             tour_obj.save()
         tournament_obj = Tournament.objects.get(id=tour['id'])
         if not tournament_obj.id == 'fc89fadb-962f-43d5-88c5-4eae082eaf1f':
@@ -115,25 +115,24 @@ def calculation():
             algorithm(match.teamA, match.teamA_score, match.teamB, match.teamB_score)
 
 def algorithm(tA, tA_score, tB, tB_score):
-    fixed_win = 5
     pointsSystem = PointSystem.objects.get(id=1)
     if tA_score == tB_score:
         pass
     else:
         if pointsSystem.algo:
             if tA_score > tB_score:
-                tA.ladder_points += new1_points_algo(tA.ladder_points, tB.ladder_points) + fixed_win
-                tB.ladder_points += -(new1_points_algo(tA.ladder_points, tB.ladder_points)) + fixed_win
+                tA.ladder_points += new1_points_algo(tA.ladder_points, tB.ladder_points) + pointsSystem.ladder_points_for_match
+                tB.ladder_points += -(new1_points_algo(tA.ladder_points, tB.ladder_points)) + pointsSystem.ladder_points_for_match
             elif tB_score > tA_score:
-                tB.ladder_points += new1_points_algo(tB.ladder_points, tA.ladder_points) + fixed_win
-                tA.ladder_points += -(new1_points_algo(tB.ladder_points, tA.ladder_points)) + fixed_win
+                tB.ladder_points += new1_points_algo(tB.ladder_points, tA.ladder_points) + pointsSystem.ladder_points_for_match
+                tA.ladder_points += -(new1_points_algo(tB.ladder_points, tA.ladder_points)) + pointsSystem.ladder_points_for_match
         else:
             if tA_score > tB_score:
-                tA.ladder_points += current_points_algo(tA.ladder_points, tB.ladder_points) + fixed_win
-                tB.ladder_points += -(current_points_algo(tA.ladder_points, tB.ladder_points)) + fixed_win
+                tA.ladder_points += current_points_algo(tA.ladder_points, tB.ladder_points) + pointsSystem.ladder_points_for_match
+                tB.ladder_points += -(current_points_algo(tA.ladder_points, tB.ladder_points)) + pointsSystem.ladder_points_for_match
             elif tB_score > tA_score:
-                tB.ladder_points += current_points_algo(tB.ladder_points, tA.ladder_points) + fixed_win
-                tA.ladder_points += -(current_points_algo(tB.ladder_points, tA.ladder_points)) + fixed_win
+                tB.ladder_points += current_points_algo(tB.ladder_points, tA.ladder_points) + pointsSystem.ladder_points_for_match
+                tA.ladder_points += -(current_points_algo(tB.ladder_points, tA.ladder_points)) + pointsSystem.ladder_points_for_match
     tA.save()
     tB.save()
 
@@ -153,6 +152,20 @@ def points_deduction(response):
     fakematches = FakeMatch.objects.all()
     form = FakeMatchForm()
     return render(response, 'main/fakematches.html', {'fakematches': fakematches, 'form': form})
+
+def tournaments(response):
+
+    if response.method == 'POST':
+        form = TournamentForm(response.POST)
+        if form.is_valid():
+            new_tour = Tournament(name=form.cleaned_data['name'],
+                                         type=form.cleaned_data['type'])
+            new_tour.save()
+            return redirect('/tournaments')
+
+    tournaments = Tournament.objects.all()
+    form = TournamentForm()
+    return render(response, 'main/tournaments.html', {'tournaments': tournaments, 'form': form})
 
 def current_points_algo(winning_team_ladder_points, losing_team_ladder_points):
     total = winning_team_ladder_points + losing_team_ladder_points
@@ -224,7 +237,6 @@ def tournament_results(tournament):
             except Team.DoesNotExist:
                 print('Team B not found')
     
-
 def dashboard(response):
     total_matches = requests.get('https://api.projectv.gg/api/v1/frontend/matches').json()['meta']['total']
     avg_matchlength = 40 #in minutes
@@ -263,6 +275,9 @@ def points(response):
         form = PointSystemForm(response.POST)
         if form.is_valid():
             pointSystem.algo = form.cleaned_data['algo']
+            pointSystem.ladder_points_for_match = form.cleaned_data['ladder_points_for_match']
+            pointSystem.vrc_points_for_win = form.cleaned_data['vrc_points_for_win']
+            pointSystem.vrc_points_for_loss = form.cleaned_data['vrc_points_for_loss']
             pointSystem.L_pos1 = form.cleaned_data['L_pos1']
             pointSystem.L_pos2 = form.cleaned_data['L_pos2']
             pointSystem.L_pos3_4 = form.cleaned_data['L_pos3_4']
