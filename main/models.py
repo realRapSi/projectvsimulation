@@ -47,6 +47,9 @@ class FakeMatch(models.Model):
 
 class PointSystem(models.Model):
     algo = models.BooleanField(default=False)
+    ladder_points_for_match = models.IntegerField(default=0)
+    vrc_points_for_win = models.IntegerField(default=0)
+    vrc_points_for_loss = models.IntegerField(default=0)
     
     L_pos1 = models.IntegerField(default=0)
     L_pos2 = models.IntegerField(default=0)

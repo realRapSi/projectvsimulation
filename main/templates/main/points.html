@@ -104,6 +104,27 @@ PROJECT V SIMULATION
                         </label> 
                     </div>
                     <p></p>
+                    <div>
+                        <input type="number" name="ladder_points_for_match" value="{{pointSystem.ladder_points_for_match}}" step="any" class="numberinput form-control" id="id_ladder_points_for_match" style="width:70px;">
+                        <label for="id_ladder_points_for_match" class="form-check-label">
+                            Ladder Points for a played Match
+                        </label>
+                    </div>
+                    <p></p>
+                    <div>
+                        <input type="number" name="vrc_points_for_win" value="{{pointSystem.vrc_points_for_win}}" step="any" class="numberinput form-control" id="id_vrc_points_for_win" style="width:70px;">
+                        <label for="id_vrc_points_for_win" class="form-check-label">
+                            VRC Points rewarded for a win in the Ladder
+                        </label>
+                    </div> 
+                    <p></p>
+                    <div>
+                        <input type="number" name="vrc_points_for_loss" value="{{pointSystem.vrc_points_for_loss}}" step="any" class="numberinput form-control" id="id_vrc_points_for_loss" style="width:70px;">
+                        <label for="id_vrc_points_for_loss" class="form-check-label">
+                            VRC Points rewarded for a loss in the Ladder
+                        </label> 
+                    </div>
+                    <p></p>
                     <button type="submit" class="btn btn-success">Save</button>
                   </form>
             </div>

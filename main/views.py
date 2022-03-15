@@ -10,9 +10,6 @@ import requests
 import datetime as dt
 
 # Create your views here.
-def index(response):
-    return render(response, 'main/index.html', {})
-
 def update_database(response):
     #get Teams
     teams = requests.get('https://api.projectv.gg/api/v1/frontend/teams?page_size=100000').json()
@@ -57,10 +54,7 @@ def update_database(response):
                             compute = compute)
             new_match.save()
     
-    
-    return redirect('/leaderboard')
-
-def run_calculation(response):
+    #tournaments and results
     tours = requests.get('https://api.projectv.gg/api/v1/frontend/tournaments').json()['data']
     
     for tour in tours:
@@ -71,10 +65,12 @@ def run_calculation(response):
         if not tournament_obj.id == 'fc89fadb-962f-43d5-88c5-4eae082eaf1f':
             tournament_results(tournament_obj)
         
-    print(Team.objects.get(id='ccdcdc5b-7860-4ee4-8ace-2d01dc977790').result_set.all())
     
-    #calculation()
-    return redirect('/leaderboard')
+    return redirect('')
+
+def run_calculation(response):
+    calculation()
+    return redirect('')
 
 def ranking(response):
     teams = Team.objects.order_by('-ladder_points')
@@ -89,7 +85,7 @@ def reset_ladder_points(response):
     for match in fakematches:
         match.computed = False
         match.save()
-    return redirect('/leaderboard')
+    return redirect('')
 
 def calculation():
     matches_sorted_by_date = LadderMatch.objects.all().order_by('date')
@@ -120,15 +116,24 @@ def calculation():
 
 def algorithm(tA, tA_score, tB, tB_score):
     fixed_win = 5
+    pointsSystem = PointSystem.objects.get(id=1)
     if tA_score == tB_score:
         pass
     else:
-        if tA_score > tB_score:
-            tA.ladder_points += new1_points_algo(tA.ladder_points, tB.ladder_points) + fixed_win
-            tB.ladder_points += -(new1_points_algo(tA.ladder_points, tB.ladder_points)) + fixed_win
-        elif tB_score > tA_score:
-            tB.ladder_points += new1_points_algo(tB.ladder_points, tA.ladder_points) + fixed_win
-            tA.ladder_points += -(new1_points_algo(tB.ladder_points, tA.ladder_points)) + fixed_win
+        if pointsSystem.algo:
+            if tA_score > tB_score:
+                tA.ladder_points += new1_points_algo(tA.ladder_points, tB.ladder_points) + fixed_win
+                tB.ladder_points += -(new1_points_algo(tA.ladder_points, tB.ladder_points)) + fixed_win
+            elif tB_score > tA_score:
+                tB.ladder_points += new1_points_algo(tB.ladder_points, tA.ladder_points) + fixed_win
+                tA.ladder_points += -(new1_points_algo(tB.ladder_points, tA.ladder_points)) + fixed_win
+        else:
+            if tA_score > tB_score:
+                tA.ladder_points += current_points_algo(tA.ladder_points, tB.ladder_points) + fixed_win
+                tB.ladder_points += -(current_points_algo(tA.ladder_points, tB.ladder_points)) + fixed_win
+            elif tB_score > tA_score:
+                tB.ladder_points += current_points_algo(tB.ladder_points, tA.ladder_points) + fixed_win
+                tA.ladder_points += -(current_points_algo(tB.ladder_points, tA.ladder_points)) + fixed_win
     tA.save()
     tB.save()
 
@@ -250,7 +255,7 @@ def delete_all(response):
     for result in results:
         result.delete()
         
-    return redirect('/leaderboard')
+    return redirect('')
 
 def points(response):
     pointSystem = PointSystem.objects.get(id=1)
