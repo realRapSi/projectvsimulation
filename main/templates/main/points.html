@@ -104,6 +104,17 @@ PROJECT V SIMULATION
                         </label> 
                     </div>
                     <p></p>
+                    <div id="div_id_algo" class="form-check">
+                        {% if pointSystem.recalculate_ladder %}
+                        <input type="checkbox" name="recalculate_ladder" class="checkboxinput form-check-input" id="id_recalculate_ladder" checked>
+                        {% else %}
+                        <input type="checkbox" name="recalculate_ladder" class="checkboxinput form-check-input" id="id_recalculate_ladder">
+                        {% endif %}
+                        <label for="id_recalculate_ladder" class="form-check-label">
+                            Recalculate Ladder Standings
+                        </label> 
+                    </div>
+                    <p></p>
                     <div>
                         <input type="number" name="ladder_points_for_match" value="{{pointSystem.ladder_points_for_match}}" step="any" class="numberinput form-control" id="id_ladder_points_for_match" style="width:70px;">
                         <label for="id_ladder_points_for_match" class="form-check-label">

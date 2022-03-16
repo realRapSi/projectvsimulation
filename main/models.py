@@ -10,6 +10,9 @@ class Team(models.Model):
     ladder_points = models.IntegerField(blank=True, null=True)
     projectv_points = models.IntegerField(blank=True, null=True)
     last_game = models.DateTimeField(blank=True, default=timezone.now)
+    ladder_wins = models.IntegerField(blank=True, null=True)
+    ladder_loss = models.IntegerField(blank=True, null=True)
+    ladder_rank = models.IntegerField(blank=True, null=True, default=None)
 
     def __str__(self) -> str:
         return self.name
@@ -48,6 +51,8 @@ class FakeMatch(models.Model):
 class PointSystem(models.Model):
     algo = models.BooleanField(default=False)
     ladder_points_for_match = models.IntegerField(default=0)
+    recalculate_ladder = models.BooleanField(default=False)
+    ladder_calculated = models.BooleanField(default=False)
     vrc_points_for_win = models.IntegerField(default=0)
     vrc_points_for_loss = models.IntegerField(default=0)
     

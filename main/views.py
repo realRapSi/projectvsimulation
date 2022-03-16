@@ -1,6 +1,7 @@
 from asyncio.windows_events import NULL
 from datetime import timedelta
 from django.shortcuts import redirect, render
+from django.forms.models import model_to_dict
 from .models import PointSystem, Team, LadderMatch, FakeMatch, Tournament, Result
 from .forms import FakeMatchForm, PointSystemForm, TournamentForm
 import requests
@@ -66,14 +67,33 @@ def update_database(response):
             tournament_results(tournament_obj)
         
     
-    return redirect('')
+    return redirect('leaderboard')
 
 def run_calculation(response):
-    calculation()
-    return redirect('')
+    teams = Team.objects.all()
+    calc_settings = PointSystem.objects.first()
+    for team in teams:
+        team.projectv_points = 0
+        if calc_settings.recalculate_ladder:
+            team.ladder_points = 1000
+            team.ladder_wins = 0
+            team.ladder_loss = 0
+            team.ladder_rank = None
+        team.save()
+        
+    if calc_settings.recalculate_ladder:
+        calc_settings.ladder_calculated = False
+        ladder_calculation()
+        calc_settings.ladder_calculated = True
+        calc_settings.recalculate_ladder = False
+        calc_settings.save()
+        
+    vrc_calculation()
+    
+    return redirect('leaderboard')
 
 def ranking(response):
-    teams = Team.objects.order_by('-ladder_points')
+    teams = Team.objects.order_by('-projectv_points')
     return render(response, 'main/index.html', {'teams': teams})
 
 def reset_ladder_points(response):
@@ -87,7 +107,7 @@ def reset_ladder_points(response):
         match.save()
     return redirect('')
 
-def calculation():
+def ladder_calculation():
     matches_sorted_by_date = LadderMatch.objects.all().order_by('date')
     fake_matches = FakeMatch.objects.all()
 
@@ -114,25 +134,77 @@ def calculation():
                         match.teamB.save()
             algorithm(match.teamA, match.teamA_score, match.teamB, match.teamB_score)
 
+    ladder_ranking() 
+    
+def vrc_calculation(): 
+    results = Result.objects.all()
+    points = PointSystem.objects.first()
+        
+    point_dict = model_to_dict(points)
+    point_distribution = {}
+    for key,value in point_dict.items():
+        point_distribution[key.replace('_', '-')] = value
+        
+    for result in results:
+        if result.place == '3' or result.place == '4':
+            result.place = '3-4'
+            result.save()
+        if result.place == None:
+            continue
+        matching_key = str(result.tournament.type[0]) + '-pos' + str(result.place)
+        result.team.projectv_points += point_distribution[matching_key]
+        result.team.save()
+    if points.ladder_calculated:
+        teams = Team.objects.all()
+        
+        for team in teams:
+            ladder_matching_key = ''
+            if team.ladder_rank <=4:
+                ladder_matching_key = 'Ladder-pos' + str(team.ladder_rank)
+            elif team.ladder_rank > 4 and team.ladder_rank <= 8:
+                ladder_matching_key = 'Ladder-pos' + str('5-8')
+            elif team.ladder_rank > 8 and team.ladder_rank <= 16:
+                ladder_matching_key = 'Ladder-pos' + str('9-16')
+            elif team.ladder_rank > 16 and team.ladder_rank <= 32:
+                ladder_matching_key = 'Ladder-pos' + str('17-32')
+            elif team.ladder_rank > 32 and team.ladder_rank <= 64:
+                ladder_matching_key = 'Ladder-pos' + str('33-64')
+            elif team.ladder_rank > 64 and team.ladder_rank <= 128:
+                ladder_matching_key = 'Ladder-pos' + str('65-128') 
+            elif team.ladder_rank > 128 and team.ladder_rank <= 256:
+                ladder_matching_key = 'Ladder-pos' + str('129-256')
+            
+            if ladder_matching_key:
+                team.projectv_points += point_distribution[ladder_matching_key]
+                team.save()
+
 def algorithm(tA, tA_score, tB, tB_score):
     pointsSystem = PointSystem.objects.get(id=1)
     if tA_score == tB_score:
         pass
-    else:
+    if not tA_score == tB_score and not tA_score == None and not tB_score == None:
         if pointsSystem.algo:
             if tA_score > tB_score:
                 tA.ladder_points += new1_points_algo(tA.ladder_points, tB.ladder_points) + pointsSystem.ladder_points_for_match
                 tB.ladder_points += -(new1_points_algo(tA.ladder_points, tB.ladder_points)) + pointsSystem.ladder_points_for_match
+                tA.ladder_wins += 1
+                tB.ladder_loss += 1
             elif tB_score > tA_score:
                 tB.ladder_points += new1_points_algo(tB.ladder_points, tA.ladder_points) + pointsSystem.ladder_points_for_match
                 tA.ladder_points += -(new1_points_algo(tB.ladder_points, tA.ladder_points)) + pointsSystem.ladder_points_for_match
+                tB.ladder_wins += 1
+                tA.ladder_loss += 1
         else:
             if tA_score > tB_score:
                 tA.ladder_points += current_points_algo(tA.ladder_points, tB.ladder_points) + pointsSystem.ladder_points_for_match
                 tB.ladder_points += -(current_points_algo(tA.ladder_points, tB.ladder_points)) + pointsSystem.ladder_points_for_match
+                tA.ladder_wins += 1
+                tB.ladder_loss += 1
             elif tB_score > tA_score:
                 tB.ladder_points += current_points_algo(tB.ladder_points, tA.ladder_points) + pointsSystem.ladder_points_for_match
                 tA.ladder_points += -(current_points_algo(tB.ladder_points, tA.ladder_points)) + pointsSystem.ladder_points_for_match
+                tB.ladder_wins += 1
+                tA.ladder_loss += 1
     tA.save()
     tB.save()
 
@@ -183,6 +255,14 @@ def new1_points_algo(winning_team_ladder_points, losing_team_ladder_points):
     points_change = int(1/(1+10**((winning_team_ladder_points - losing_team_ladder_points)/400))*50)
 
     return points_change
+
+def ladder_ranking():
+    teams = Team.objects.order_by('-ladder_points')
+    rank_counter = 1
+    for team in teams:
+        team.ladder_rank = rank_counter
+        rank_counter += 1
+        team.save()
 
 def latest_game_finder(response):
     teams = Team.objects.all()
@@ -267,7 +347,7 @@ def delete_all(response):
     for result in results:
         result.delete()
         
-    return redirect('')
+    return redirect('leaderboard')
 
 def points(response):
     pointSystem = PointSystem.objects.get(id=1)
@@ -275,6 +355,7 @@ def points(response):
         form = PointSystemForm(response.POST)
         if form.is_valid():
             pointSystem.algo = form.cleaned_data['algo']
+            pointSystem.recalculate_ladder = form.cleaned_data['recalculate_ladder']
             pointSystem.ladder_points_for_match = form.cleaned_data['ladder_points_for_match']
             pointSystem.vrc_points_for_win = form.cleaned_data['vrc_points_for_win']
             pointSystem.vrc_points_for_loss = form.cleaned_data['vrc_points_for_loss']
@@ -329,3 +410,11 @@ def points(response):
             return redirect('/pointsallocation')
     
     return render(response, 'main/points.html', {'pointSystem': pointSystem})
+
+def tournament_detail(id, response):
+    tour = Tournament.objects.get(id=id)
+    return render(response, 'main/tour_detail.html', {'tour': tour})
+
+def team_detail(id, response):
+    team = Team.objects.get(id=id)
+    return render(response, 'main/team_detail.html', {'team': team})
